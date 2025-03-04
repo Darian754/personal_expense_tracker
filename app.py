@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -41,6 +41,27 @@ def home():
     # Fetch all expenses from database
     expenses = Expense.query.all()
     return render_template("index.html", expenses=expenses)
+
+@app.route("/edit/<int:expense_id>", methods=["GET", "POST"])
+def edit_expense(expense_id):
+    # Find the expense by ID
+    expense = Expense.query.get_or_404(expense_id)
+
+    if request.method == "POST":
+        # Get updated form data
+        expense.date = request.form["date"]
+        expense.category = request.form["category"]
+        expense.amount = float(request.form["amount"])
+        expense.description = request.form["description"]
+
+        # Save changes
+        db.session.commit()
+
+        # Redirect back to home
+        return redirect("/")
+
+    return render_template("edit.html", expense=expense)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
