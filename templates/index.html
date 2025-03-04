@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -37,6 +36,7 @@
             <th>Category</th>
             <th>Amount</th>
             <th>Description</th>
+            <th>Actions</th> <!-- New column -->
         </tr>
         {% for expense in expenses %}
         <tr>
@@ -44,6 +44,9 @@
             <td>{{ expense.category }}</td>
             <td>${{ expense.amount }}</td>
             <td>{{ expense.description }}</td>
+            <td>
+                <a href="/edit/{{ expense.id }}">Edit</a>
+            </td>
         </tr>
         {% endfor %}
     </table>
