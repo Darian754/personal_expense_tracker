@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,61 +50,3 @@
 
 </body>
 </html>
-=======
-=======
->>>>>>> 90410be48d8e98b531f968ac09aa2c5e0faf73cd
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Expense Tracker</title>
-</head>
-<body>
-    <h1>Personal Expense Tracker</h1>
-
-    <h2>Add a New Expense</h2>
-    <form method="POST">
-        <label>Date:</label>
-        <input type="date" name="date" required><br><br>
-
-        <label>Category:</label>
-        <select name="category" required>
-            <option>Food</option>
-            <option>Transport</option>
-            <option>Entertainment</option>
-            <option>Shopping</option>
-            <option>Other</option>
-        </select><br><br>
-
-        <label>Amount ($):</label>
-        <input type="number" name="amount" step="0.01" required><br><br>
-
-        <label>Description:</label>
-        <input type="text" name="description"><br><br>
-
-        <button type="submit">Add Expense</button>
-    </form>
-
-    <h2>Expense History</h2>
-    <table border="1">
-        <tr>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Amount</th>
-            <th>Description</th>
-        </tr>
-        {% for expense in expenses %}
-        <tr>
-            <td>{{ expense.date }}</td>
-            <td>{{ expense.category }}</td>
-            <td>${{ expense.amount }}</td>
-            <td>{{ expense.description }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
-</body>
-</html>
-<<<<<<< HEAD
->>>>>>> 90410be (added basic structure of the app and added a html file.)
-=======
->>>>>>> 90410be48d8e98b531f968ac09aa2c5e0faf73cd
