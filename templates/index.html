@@ -1,112 +1,138 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Expense Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Personal Expense Tracker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .table th, .table td {
+            text-align: center;
+        }
+        .btn {
+            margin: 2px;
+        }
+    </style>
 </head>
+    
 <body>
-    <h1>Personal Expense Tracker</h1>
+    <div class="container">
+        <h1 class="text-center my-4">Personal Expense Tracker</h1>
 
-    <h2>Add a New Expense</h2>
-    <form method="POST">
-        <label>Date:</label>
-        <input type="date" name="date" required><br><br>
+        <!-- Add Expense Form -->
+        <div class="card p-4 mb-4">
+            <h2>Add a New Expense</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Date:</label>
+                    <input type="date" name="date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Category:</label>
+                    <select name="category" class="form-select" required>
+                        <option>Food</option>
+                        <option>Transport</option>
+                        <option>Entertainment</option>
+                        <option>Shopping</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Amount ($):</label>
+                    <input type="number" name="amount" step="0.01" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description:</label>
+                    <input type="text" name="description" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Expense</button>
+            </form>
+        </div>
 
-        <label>Category:</label>
-        <select name="category" required>
-            <option>Food</option>
-            <option>Transport</option>
-            <option>Entertainment</option>
-            <option>Shopping</option>
-            <option>Other</option>
-        </select><br><br>
+        <!-- Expense Table -->
+        <div class="card p-4">
+            <h2>Expense History</h2>
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th><a href="/?sort_by=date" class="text-light">Date</a></th>
+                        <th><a href="/?sort_by=category" class="text-light">Category</a></th>
+                        <th><a href="/?sort_by=amount" class="text-light">Amount</a></th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.date }}</td>
+                        <td>{{ expense.category }}</td>
+                        <td>${{ expense.amount }}</td>
+                        <td>{{ expense.description }}</td>
+                        <td>
+                            <a href="/edit/{{ expense.id }}" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="/delete/{{ expense.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-        <label>Amount ($):</label>
-        <input type="number" name="amount" step="0.01" required><br><br>
+        {% if pagination.pages > 1 %}
+          <div class="d-flex justify-content-center my-4">
+             <nav>
+                <ul class="pagination">
+                 {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="/?page={{ pagination.prev_num }}">Previous</a>
+                    </li>
+                 {% endif %}
 
-        <label>Description:</label>
-        <input type="text" name="description"><br><br>
+                 {% for num in range(1, pagination.pages + 1) %}
+                    <li class="page-item {% if num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="/?page={{ num }}">{{ num }}</a>
+                    </li>
+                 {% endfor %}
 
-        <button type="submit">Add Expense</button>
-    </form>
-
-    <h2>Search Expenses</h2>
-     <form method="GET">
-       <label>Start Date:</label>
-       <input type="date" name="start_date">
-    
-       <label>End Date:</label>
-       <input type="date" name="end_date">
-
-       <label>Category:</label>
-       <select name="category">
-        <option value="">All Categories</option>
-        <option>Food</option>
-        <option>Transport</option>
-        <option>Entertainment</option>
-        <option>Shopping</option>
-        <option>Other</option>
-       </select>
-
-       <button type="submit">Search</button>
-     </form>
-
- 
-
-
-    <h2>Expense History</h2>
-    <table border="1">
-        <tr>
-            <th><a href="/?sort_by=date">Date</a></th>
-            <th><a href="/?sort_by=category">Category</a></th>
-            <th><a href="/?sort_by=amount">Amount</a></th>
-            <th>Description</th>
-            <th>Actions</th>
-        </tr>
-    
-        {% for expense in expenses %}
-        <tr>
-            <td>{{ expense.date }}</td>
-            <td>{{ expense.category }}</td>
-            <td>${{ expense.amount }}</td>
-            <td>{{ expense.description }}</td>
-            <td>
-                <a href="/edit/{{ expense.id }}">Edit</a>
-                <a href="/delete/{{ expense.id }}" onclick="return confirm('Are you sure?');">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    {% if bar_chart and pie_chart %}
-       <h2>Expense Overview</h2>
-    
-        <h3>Expenses by Category</h3>
-        <img src="data:image/png;base64,{{ bar_chart }}" alt="Bar Chart">
-
-        <h3>Spending Breakdown</h3>
-        <img src="data:image/png;base64,{{ pie_chart }}" alt="Pie Chart">
-    {% else %}
-         <p>No data available to generate charts.</p>
-    {% endif %}
-
-
-
-    {% if pagination.pages > 1 %}
-     <div>
-        {% if pagination.has_prev %}
-            <a href="/?page={{ pagination.prev_num }}">Previous</a>
+                 {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="/?page={{ pagination.next_num }}">Next</a>
+                    </li>
+                 {% endif %}
+                </ul>
+             </nav>
+          </div>
         {% endif %}
 
-        <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
-
-        {% if pagination.has_next %}
-            <a href="/?page={{ pagination.next_num }}">Next</a>
+        <!-- Charts Section -->
+        {% if bar_chart and pie_chart %}
+        <div class="card p-4 mt-4">
+            <h2>Expense Overview</h2>
+            <h3>Expenses by Category</h3>
+            <img src="data:image/png;base64,{{ bar_chart }}" class="img-fluid" alt="Bar Chart">
+            <h3>Spending Breakdown</h3>
+            <img src="data:image/png;base64,{{ pie_chart }}" class="img-fluid" alt="Pie Chart">
+        </div>
         {% endif %}
-     </div>
-     {% endif %}
 
+        
 
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
+
 </html>
 
 
