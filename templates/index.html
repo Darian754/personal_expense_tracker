@@ -113,6 +113,39 @@
           </div>
         {% endif %}
 
+        <div class="card p-4 mt-4">
+            <h2>Filter Charts by Month & Year</h2>
+            <form method="GET">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Select Month:</label>
+                        <select name="month" class="form-select">
+                            <option value="">All Months</option>
+                            {% for num, name in [
+                                (1, "January"), (2, "February"), (3, "March"), (4, "April"),
+                                (5, "May"), (6, "June"), (7, "July"), (8, "August"),
+                                (9, "September"), (10, "October"), (11, "November"), (12, "December")
+                            ] %}
+                                <option value="{{ num }}" {% if num == selected_month %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+        
+                    <div class="col-md-6">
+                        <label class="form-label">Select Year:</label>
+                        <select name="year" class="form-select">
+                            <option value="">All Years</option>
+                            {% for year in available_years %}
+                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Filter</button>
+            </form>
+        </div>
+        
+
         <!-- Charts Section -->
         {% if bar_chart and pie_chart %}
         <div class="card p-4 mt-4">

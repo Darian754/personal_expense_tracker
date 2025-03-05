@@ -31,9 +31,17 @@ with app.app_context():
 
 
 
-def generate_charts():
+def generate_charts(selected_month=None, selected_year=None):
     # Get all expenses from the database
-    expenses = Expense.query.all()
+    query = Expense.query
+
+    # Filter by month and year if selected
+    if selected_month:
+        query = query.filter(db.extract("month", Expense.date) == selected_month)
+    if selected_year:
+        query = query.filter(db.extract("year", Expense.date) == selected_year)
+
+    expenses = query.all()
 
     # Organize data by category
     category_totals = {}
@@ -51,7 +59,7 @@ def generate_charts():
     plt.bar(categories, amounts, color='skyblue')
     plt.xlabel("Category")
     plt.ylabel("Amount ($)")
-    plt.title("Expenses by Category")
+    plt.title(f"Expenses for {selected_month}/{selected_year}" if selected_month and selected_year else "Expenses by Category")
 
     # Convert Bar Chart to Image
     bar_img = io.BytesIO()
@@ -62,7 +70,7 @@ def generate_charts():
     # Create Pie Chart
     plt.figure(figsize=(6, 4))
     plt.pie(amounts, labels=categories, autopct="%1.1f%%", colors=['lightcoral', 'gold', 'lightblue', 'lightgreen', 'orange'])
-    plt.title("Spending Breakdown")
+    plt.title(f"Spending Breakdown for {selected_month}/{selected_year}" if selected_month and selected_year else "Spending Breakdown")
 
     # Convert Pie Chart to Image
     pie_img = io.BytesIO()
@@ -71,6 +79,7 @@ def generate_charts():
     pie_url = base64.b64encode(pie_img.getvalue()).decode()
 
     return bar_url, pie_url
+
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -91,9 +100,12 @@ def home():
     end_date = request.args.get("end_date")
     category = request.args.get("category")
     sort_by = request.args.get("sort_by", "date")
-
     page = request.args.get("page", 1, type=int)
-    per_page = 5  # Show 5 expenses per page
+    per_page = 5
+
+    # Get selected month and year from dropdown
+    selected_month = request.args.get("month", type=int)
+    selected_year = request.args.get("year", type=int)
 
     query = Expense.query
 
@@ -104,6 +116,11 @@ def home():
     if category and category != "":
         query = query.filter(Expense.category == category)
 
+    if selected_month:
+        query = query.filter(db.extract("month", Expense.date) == selected_month)
+    if selected_year:
+        query = query.filter(db.extract("year", Expense.date) == selected_year)
+
     if sort_by == "date":
         query = query.order_by(Expense.date)
     elif sort_by == "category":
@@ -111,16 +128,21 @@ def home():
     elif sort_by == "amount":
         query = query.order_by(Expense.amount)
 
-   # total_expenses = query.count()
-   # total_pages = ceil(total_expenses / per_page)
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     expenses = pagination.items
 
-    # Generate Charts
-    bar_chart, pie_chart = generate_charts()
+    # Get available years dynamically
+    available_years = db.session.query(db.func.extract("year", Expense.date)).distinct().all()
+    available_years = sorted([int(year[0]) for year in available_years])
 
+    # Generate charts with filters
+    bar_chart, pie_chart = generate_charts(selected_month, selected_year)
 
-    return render_template("index.html", expenses=expenses, pagination=pagination, bar_chart=bar_chart, pie_chart=pie_chart)
+    return render_template("index.html", expenses=expenses, pagination=pagination,
+                           bar_chart=bar_chart, pie_chart=pie_chart, 
+                           selected_month=selected_month, selected_year=selected_year,
+                           available_years=available_years)
+
 
 
 
