@@ -62,6 +62,19 @@ def edit_expense(expense_id):
 
     return render_template("edit.html", expense=expense)
 
+@app.route("/delete/<int:expense_id>")
+def delete_expense(expense_id):
+    # Find the expense by ID
+    expense = Expense.query.get_or_404(expense_id)
+
+    # Delete from database
+    db.session.delete(expense)
+    db.session.commit()
+
+    # Redirect back to home
+    return redirect("/")
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
