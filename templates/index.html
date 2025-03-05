@@ -29,15 +29,40 @@
         <button type="submit">Add Expense</button>
     </form>
 
+    <h2>Search Expenses</h2>
+     <form method="GET">
+       <label>Start Date:</label>
+       <input type="date" name="start_date">
+    
+       <label>End Date:</label>
+       <input type="date" name="end_date">
+
+       <label>Category:</label>
+       <select name="category">
+        <option value="">All Categories</option>
+        <option>Food</option>
+        <option>Transport</option>
+        <option>Entertainment</option>
+        <option>Shopping</option>
+        <option>Other</option>
+       </select>
+
+       <button type="submit">Search</button>
+     </form>
+
+ 
+
+
     <h2>Expense History</h2>
     <table border="1">
         <tr>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Amount</th>
+            <th><a href="/?sort_by=date">Date</a></th>
+            <th><a href="/?sort_by=category">Category</a></th>
+            <th><a href="/?sort_by=amount">Amount</a></th>
             <th>Description</th>
-            <th>Actions</th> <!-- New column -->
+            <th>Actions</th>
         </tr>
+    
         {% for expense in expenses %}
         <tr>
             <td>{{ expense.date }}</td>
@@ -52,5 +77,23 @@
         {% endfor %}
     </table>
 
+
+    {% if pagination.pages > 1 %}
+     <div>
+        {% if pagination.has_prev %}
+            <a href="/?page={{ pagination.prev_num }}">Previous</a>
+        {% endif %}
+
+        <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+
+        {% if pagination.has_next %}
+            <a href="/?page={{ pagination.next_num }}">Next</a>
+        {% endif %}
+     </div>
+     {% endif %}
+
+
 </body>
 </html>
+
+
