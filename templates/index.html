@@ -77,6 +77,19 @@
         {% endfor %}
     </table>
 
+    {% if bar_chart and pie_chart %}
+       <h2>Expense Overview</h2>
+    
+        <h3>Expenses by Category</h3>
+        <img src="data:image/png;base64,{{ bar_chart }}" alt="Bar Chart">
+
+        <h3>Spending Breakdown</h3>
+        <img src="data:image/png;base64,{{ pie_chart }}" alt="Pie Chart">
+    {% else %}
+         <p>No data available to generate charts.</p>
+    {% endif %}
+
+
 
     {% if pagination.pages > 1 %}
      <div>

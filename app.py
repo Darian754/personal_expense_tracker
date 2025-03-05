@@ -2,6 +2,10 @@ from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 import os
 from math import ceil
+import matplotlib.pyplot as plt
+import io
+import base64
+
 
 app = Flask(__name__)
 
@@ -24,6 +28,50 @@ class Expense(db.Model):
 # Create the database tables
 with app.app_context():
     db.create_all()
+
+
+
+def generate_charts():
+    # Get all expenses from the database
+    expenses = Expense.query.all()
+
+    # Organize data by category
+    category_totals = {}
+    for expense in expenses:
+        category_totals[expense.category] = category_totals.get(expense.category, 0) + expense.amount
+
+    if not category_totals:
+        return None, None  # No data available
+
+    # Create Bar Chart
+    categories = list(category_totals.keys())
+    amounts = list(category_totals.values())
+
+    plt.figure(figsize=(6, 4))
+    plt.bar(categories, amounts, color='skyblue')
+    plt.xlabel("Category")
+    plt.ylabel("Amount ($)")
+    plt.title("Expenses by Category")
+
+    # Convert Bar Chart to Image
+    bar_img = io.BytesIO()
+    plt.savefig(bar_img, format="png")
+    bar_img.seek(0)
+    bar_url = base64.b64encode(bar_img.getvalue()).decode()
+
+    # Create Pie Chart
+    plt.figure(figsize=(6, 4))
+    plt.pie(amounts, labels=categories, autopct="%1.1f%%", colors=['lightcoral', 'gold', 'lightblue', 'lightgreen', 'orange'])
+    plt.title("Spending Breakdown")
+
+    # Convert Pie Chart to Image
+    pie_img = io.BytesIO()
+    plt.savefig(pie_img, format="png")
+    pie_img.seek(0)
+    pie_url = base64.b64encode(pie_img.getvalue()).decode()
+
+    return bar_url, pie_url
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -68,8 +116,11 @@ def home():
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     expenses = pagination.items
 
+    # Generate Charts
+    bar_chart, pie_chart = generate_charts()
 
-    return render_template("index.html", expenses=expenses, pagination=pagination)
+
+    return render_template("index.html", expenses=expenses, pagination=pagination, bar_chart=bar_chart, pie_chart=pie_chart)
 
 
 
@@ -109,3 +160,6 @@ def delete_expense(expense_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+    
+
