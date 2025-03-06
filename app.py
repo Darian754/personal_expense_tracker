@@ -35,6 +35,8 @@ class Expense(db.Model):
     category = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.String(200))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)  # ✅ Link to User table
+
 
 
 class User(db.Model, UserMixin):
@@ -108,7 +110,7 @@ def home():
         amount = float(request.form["amount"])
         description = request.form["description"]
 
-        new_expense = Expense(date=date, category=category, amount=amount, description=description)
+        new_expense = Expense(date=date, category=category, amount=amount, description=description, user_id=current_user.id)
         db.session.add(new_expense)
         db.session.commit()
 
@@ -127,7 +129,7 @@ def home():
     selected_month = request.args.get("month", type=int)
     selected_year = request.args.get("year", type=int)
 
-    query = Expense.query
+    query = Expense.query.filter_by(user_id=current_user.id)
 
     if start_date:
         query = query.filter(Expense.date >= start_date)
