@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, redirect, flash, session
+from flask import Flask, render_template, request, redirect, flash, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from math import ceil
 import matplotlib.pyplot as plt
@@ -20,6 +22,11 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Initialize the database
 db = SQLAlchemy(app)
 
+#user login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"  # Redirect users to login if not authenticated
+
 # Define Expense model
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,6 +34,12 @@ class Expense(db.Model):
     category = db.Column(db.String(50), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.String(200))
+
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
 
 # Create the database tables
 with app.app_context():
@@ -86,6 +99,7 @@ def generate_charts(selected_month=None, selected_year=None):
 
 
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def home():
     if request.method == "POST":
         date = request.form["date"]
@@ -187,6 +201,59 @@ def delete_expense(expense_id):
     # Redirect back to home
     return redirect("/")
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        
+        # Check if username already exists
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Username already exists!", "danger")
+            return redirect(url_for("register"))
+
+        # Hash password and store user
+        hashed_password = generate_password_hash(password, method="pbkdf2:sha256")
+        new_user = User(username=username, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        flash("Registration successful! Please log in.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        user = User.query.filter_by(username=username).first()
+
+        # Check if user exists and password is correct
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            flash("Login successful!", "success")
+            return redirect(url_for("home"))
+        else:
+            flash("Invalid username or password", "danger")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Logged out successfully.", "info")
+    return redirect(url_for("login"))
 
 
 if __name__ == "__main__":
