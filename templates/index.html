@@ -24,6 +24,15 @@
 </head>
     
 <body>
+    <div class="container mt-3 d-flex justify-content-between">
+        <h1>Personal Expense Tracker</h1>
+        <div>
+            <span class="me-2">Logged in as: {{ current_user.username }}</span>
+            <a href="/logout" class="btn btn-danger btn-sm">Logout</a>
+        </div>
+    </div>
+    <hr>
+    
     {% with messages = get_flashed_messages(with_categories=True) %}
      {% if messages %}
         <div class="container mt-3">

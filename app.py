@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, flash, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from math import ceil
@@ -157,10 +158,13 @@ def home():
     # Generate charts with filters
     bar_chart, pie_chart = generate_charts(selected_month, selected_year)
 
+    
+
     return render_template("index.html", expenses=expenses, pagination=pagination,
                            bar_chart=bar_chart, pie_chart=pie_chart, 
                            selected_month=selected_month, selected_year=selected_year,
-                           available_years=available_years)
+                           available_years=available_years, current_user=current_user)
+
 
 
 
