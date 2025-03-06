@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import os
 from math import ceil
@@ -8,6 +8,9 @@ import base64
 
 
 app = Flask(__name__)
+
+app.secret_key = "os.urandom(24)"  # Replace with a strong key
+
 
 # Configure SQLite database
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -94,6 +97,8 @@ def home():
         db.session.add(new_expense)
         db.session.commit()
 
+        flash("Expense added successfully!", "success") 
+
         return redirect("/")
 
     start_date = request.args.get("start_date")
@@ -161,6 +166,8 @@ def edit_expense(expense_id):
         # Save changes
         db.session.commit()
 
+        flash("Expense updated successfully!", "info") #info - Blue message
+
         # Redirect back to home
         return redirect("/")
 
@@ -174,6 +181,8 @@ def delete_expense(expense_id):
     # Delete from database
     db.session.delete(expense)
     db.session.commit()
+
+    flash("Expense deleted successfully!", "danger") #Danger - Red message
 
     # Redirect back to home
     return redirect("/")
