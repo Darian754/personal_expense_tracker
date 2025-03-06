@@ -52,7 +52,8 @@ with app.app_context():
 
 def generate_charts(selected_month=None, selected_year=None):
     # Get all expenses from the database
-    query = Expense.query
+    query = Expense.query.filter_by(user_id=current_user.id)
+
 
     # Filter by month and year if selected
     if selected_month:
