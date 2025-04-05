@@ -12,7 +12,7 @@ Personal Expense Tracker is a full-stack web application developed using the Fla
 ## Installation
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/personal-expense-tracker.git
+    git clone https://github.com/Darian754/personal-expense-tracker.git
     ```
 2. **Navigate to the project directory:**
     ```bash
